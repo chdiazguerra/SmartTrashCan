@@ -6,21 +6,35 @@
 #define ledy 13
 #define ledg 15
 #define nchange 5
+#define delaytime 1000
 
 #define debug true
 
+#include <WiFiClientSecure.h>
 #include "StateChange.h"
 #include "States.h"
+#include "WebConnection.h"
+#include "WebPageCertificate.h"
 
 const float conversionConst = 29.1;
 const float minGreen = 20;
 const float minYellow = 10;
 
-float distance, distancia1, distancia2, duration;
-int decoded;
+float distance, distancia1, distancia2, duration, currentTime;
+int decoded, state = 0;
 bool hasChanged;
 
+const String serverName = "YOUR_WEBPAGE";
+WiFiClientSecure client;
+X509List cert(WEBPAGE_CERTIFICATE);
+const String ID = "6f20b65f89d4ccd";
+const float delaySend = 20000;
+
 StateChange stateChange(nchange, ledg, ledy, ledr);
+WebConnection webConnection(serverName, client, ID, debug, delaySend);
+
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
 
 float medir(int trigpin, int echopin){
@@ -84,6 +98,17 @@ void print(int msg, bool newline = true){
   }
 }
 
+void initWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  print("Connecting to WiFi ..", false);
+  while (WiFi.status() != WL_CONNECTED) {
+    print('.', false);
+    delay(1000);
+  }
+  print("Connected");
+}
+
 
 void setup()
 {
@@ -97,6 +122,12 @@ void setup()
   pinMode(ledr, OUTPUT);
   pinMode(ledy, OUTPUT);
   pinMode(ledg, OUTPUT);
+
+  initWiFi();
+
+  client.setTrustAnchors(&cert);
+  configTime(0, 0, "pool.ntp.org");
+
 }
 
 void loop()
@@ -118,11 +149,14 @@ void loop()
   print(decoded);
 
   hasChanged = stateChange.medicion(decoded);
+  state = stateChange.getCurrent();
   if (hasChanged){
     stateChange.changeState(hasChanged);
     print("State changed: ", false);
-    print(stateChange.getCurrent());
+    print(state);
   }
   
-  delay(1000);
+  webConnection.sendData(state);
+
+  delay(delaytime);
 }

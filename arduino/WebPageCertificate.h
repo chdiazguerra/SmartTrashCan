@@ -1,0 +1,3 @@
+const char WEBPAGE_CERTIFICATE[] = R"=EOF=(
+YOUR_CERTIFICATE
+)=EOF=";

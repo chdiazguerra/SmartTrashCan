@@ -14,8 +14,10 @@ int StateChange::getCurrent(){
 }
 
 bool StateChange::medicion(int input){
+    bool result = false;
     if (_current == States::INIT){
         _current = input;
+        result = true;
     }
     if (input == _input){
         _count++;
@@ -25,9 +27,9 @@ bool StateChange::medicion(int input){
     }
     if (_count == _n_change){
         _current = _input;
-        return true;
+        result = true;
     }
-    return false;
+    return result;
 }
 
 void StateChange::changeState(bool hasChanged){

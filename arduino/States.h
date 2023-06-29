@@ -2,10 +2,10 @@
 #define STATES_H
 
 enum States{
+  INIT,
   GREEN,
   YELLOW,
-  RED,
-  INIT
+  RED  
 };
 
 #endif
